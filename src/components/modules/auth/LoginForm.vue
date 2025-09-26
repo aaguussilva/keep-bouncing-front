@@ -77,7 +77,7 @@ const handleLogin = async () => {
   if (result.success) {
     loginForm.email = ''
     loginForm.password = ''
-    router.push('/dashboard')
+    router.push('/home')
   }
 }
 </script>
