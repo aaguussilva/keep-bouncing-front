@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="handleRegister" class="auth-form">
+  <form @submit.prevent="handleRegister">
     <TextField
       v-model="registerForm.name"
       type="text"
@@ -62,7 +62,7 @@
 import { reactive, computed } from 'vue'
 import { useStore } from 'vuex'
 import TextField from '../../shared/TextField.vue'
-import Button from '../../shared/Button.vue'
+import Button from '../../shared/CustomButton.vue'
 
 const emit = defineEmits(['register-success'])
 
@@ -130,24 +130,4 @@ const handleRegister = async () => {
 }
 </script>
 
-<style scoped>
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Los estilos de input ahora están en TextField.vue */
-</style>
+<style scoped></style>
