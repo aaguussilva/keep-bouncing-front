@@ -21,8 +21,8 @@ const route = useRoute()
 
 const navigationItems = computed(() => [
   { id: 'home', label: 'Inicio', route: '/home', disabled: false },
-  { id: 'item2', label: 'Item 2', route: '', disabled: true },
-  { id: 'item3', label: 'Item 3', route: '', disabled: true },
+  { id: 'register-pegue', label: 'Registrar Pegue', route: '/pegue/register', disabled: false },
+  { id: 'profile', label: 'Perfil', route: '/profile/edit', disabled: false },
 ])
 
 const navigateTo = (routePath) => {

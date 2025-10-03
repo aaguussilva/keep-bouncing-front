@@ -5,6 +5,7 @@ import store from '../store'
 import AuthView from '../views/modules/auth/AuthView.vue'
 import HomeView from '../views/modules/home/HomeView.vue'
 import EditProfileView from '../views/modules/profile/EditProfileView.vue'
+import RegisterPegueView from '../views/modules/pegue/RegisterPegueView.vue'
 
 const routes = [
   {
@@ -41,6 +42,19 @@ const routes = [
     path: '/profile/edit',
     name: 'EditProfile',
     component: EditProfileView,
+    beforeEnter: (to, from, next) => {
+      // Si no está autenticado, redirigir al auth
+      if (!store.getters['auth/isAuthenticated']) {
+        next('/auth')
+      } else {
+        next()
+      }
+    },
+  },
+  {
+    path: '/pegue/register',
+    name: 'RegisterPegue',
+    component: RegisterPegueView,
     beforeEnter: (to, from, next) => {
       // Si no está autenticado, redirigir al auth
       if (!store.getters['auth/isAuthenticated']) {
