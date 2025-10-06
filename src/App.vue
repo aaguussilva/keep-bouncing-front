@@ -22,3 +22,9 @@ onMounted(() => {
     <router-view />
   </div>
 </template>
+
+<style>
+body {
+  font-family: 'VT323', monospace;
+}
+</style>
