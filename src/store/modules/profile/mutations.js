@@ -10,6 +10,10 @@ export default {
   },
   SET_PROFILE_SUCCESS(state, message) {
     state.successMessage = message
+    state.errorMessage = null
+    setTimeout(() => {
+      state.successMessage = null
+    }, 3000)
   },
   CLEAR_PROFILE_MESSAGES(state) {
     state.errorMessage = null
