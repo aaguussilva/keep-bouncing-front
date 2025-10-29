@@ -100,18 +100,12 @@ const initializeForm = () => {
 }
 
 /** Carga el perfil al montar el componente */
-// onMounted(async () => {
-//   if (authUser.value?.id) {
-//     await store.dispatch('profile/fetchUserProfile', authUser.value.id)
-//     initializeForm()
-//   }
-// })
-
-watch(authUser, (val) => {
-  if (val?.id) {
-    store.dispatch('profile/fetchUserProfile', val.id)
+onMounted(async () => {
+  if (authUser.value?.id) {
+    await store.dispatch('profile/fetchUserProfile', authUser.value.id)
+    initializeForm()
   }
-}, { immediate: true })
+})
 
 /** Envío del formulario */
 const handleSaveProfile = async () => {
