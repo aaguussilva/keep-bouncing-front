@@ -15,6 +15,7 @@ export default {
       const data = await response.json()
 
       if (response.ok) {
+        localStorage.setItem('access_token', data.token)
         commit('SET_SUCCESS_MESSAGE', data.message)
         commit('SET_USER', data.user)
         return { success: true }
@@ -65,6 +66,7 @@ export default {
   },
 
   logout({ commit }) {
+    localStorage.removeItem('access_token')
     commit('LOGOUT')
   },
 
