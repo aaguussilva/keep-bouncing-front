@@ -16,59 +16,67 @@ const routes = [
     path: '/auth',
     name: 'Auth',
     component: AuthView,
-    beforeEnter: (to, from, next) => {
-      // Si ya está autenticado, redirigir al home
-      if (store.getters['auth/isAuthenticated']) {
-        next('/home')
-      } else {
-        next()
-      }
-    },
+    meta: { requiresGuest: true } // sólo accesible sin login
   },
   {
     path: '/home',
     name: 'Home',
     component: HomeView,
-    beforeEnter: (to, from, next) => {
-      // Si no está autenticado, redirigir al auth
-      if (!store.getters['auth/isAuthenticated']) {
-        next('/auth')
-      } else {
-        next()
-      }
-    },
+    meta: { requiresAuth: true }, // 🔒 necesita login
   },
   {
     path: '/profile/edit',
     name: 'EditProfile',
     component: EditProfileView,
-    beforeEnter: (to, from, next) => {
-      // Si no está autenticado, redirigir al auth
-      if (!store.getters['auth/isAuthenticated']) {
-        next('/auth')
-      } else {
-        next()
-      }
-    },
+    meta: { requiresAuth: true },
   },
   {
     path: '/pegue/register',
     name: 'RegisterPegue',
     component: RegisterPegueView,
-    beforeEnter: (to, from, next) => {
-      // Si no está autenticado, redirigir al auth
-      if (!store.getters['auth/isAuthenticated']) {
-        next('/auth')
-      } else {
-        next()
-      }
-    },
+    meta: { requiresAuth: true },
   },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  const token = localStorage.getItem('access_token')
+  const isAuthenticated = !!token
+
+  // Verificar si el token sigue siendo válido (opcional)
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1])) // decodifica el payload del JWT
+      const exp = payload.exp * 1000 // tiempo en milisegundos
+      const now = Date.now()
+
+      if (now >= exp) {
+        console.warn('Token expirado')
+        localStorage.removeItem('token')
+        return next('/auth')
+      }
+    } catch (error) {
+      console.error('Token inválido', error)
+      localStorage.removeItem('token')
+      return next('/auth')
+    }
+  }
+
+  // Rutas protegidas: requieren login
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    return next('/auth')
+  }
+
+  // Rutas para invitados: si ya está logueado, lo mando a home
+  if (to.meta.requiresGuest && isAuthenticated) {
+    return next('/home')
+  }
+
+  next()
 })
 
 export default router

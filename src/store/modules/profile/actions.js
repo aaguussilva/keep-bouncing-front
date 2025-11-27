@@ -2,9 +2,14 @@ export default {
   async fetchUserProfile({ commit }, userId) {
 
     console.log('fetchUserProfile called', userId)
+    const token = localStorage.getItem('access_token')
 
     try {
-      const response = await fetch(`http://localhost:8000/users/${userId}`)
+      const response = await fetch(`http://localhost:8000/users/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
       const data = await response.json()
       if (!response.ok) throw new Error(data.detail || 'Error al obtener el perfil')
       commit('SET_USER_PROFILE', data)
@@ -18,12 +23,14 @@ export default {
     commit('SET_PROFILE_UPDATING', true)
 
     const { userId } = profileData
+    const token = localStorage.getItem('access_token')
 
     try {
       const response = await fetch(`http://localhost:8000/users/update/${userId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(profileData),
       })
