@@ -7,7 +7,7 @@
       placeholder="Tu nombre completo"
       :disabled="isLoading"
       required
-      :minlength="2"
+      :minlength="4"
       autocomplete="name"
     />
 
@@ -67,6 +67,18 @@
         💾 Guardar Cambios
       </Button>
     </div>
+
+    <!-- Mensajes dinámicos con transición -->
+    <transition name="fade">
+      <div v-if="profileError || profileSuccess" class="mt-4">
+        <p v-if="profileError" class="text-red-600 text-sm font-medium">
+          {{ profileError }}
+        </p>
+        <p v-if="profileSuccess" class="text-green-600 text-sm font-medium">
+          {{ profileSuccess }}
+        </p>
+      </div>
+    </transition>
   </form>
 </template>
 
@@ -81,6 +93,8 @@ const isLoading = ref(false)
 
 const authUser = computed(() => store.getters['auth/getUser'])
 const profile = computed(() => store.getters['profile/getUserProfile'])
+const profileError = computed(() => store.getters['profile/getProfileError'])
+const profileSuccess = computed(() => store.getters['profile/getProfileSuccess'])
 
 const form = reactive({
   name: '',
@@ -90,7 +104,6 @@ const form = reactive({
   confirmPassword: '',
 })
 
-/** Inicializa el formulario con datos del perfil o auth */
 const initializeForm = () => {
   const data = profile.value || authUser.value
   if (data) {
@@ -99,22 +112,17 @@ const initializeForm = () => {
   }
 }
 
-/** Carga el perfil al montar el componente */
-// onMounted(async () => {
-//   if (authUser.value?.id) {
-//     await store.dispatch('profile/fetchUserProfile', authUser.value.id)
-//     initializeForm()
-//   }
-// })
-
-watch(authUser, (val) => {
-  if (val?.id) {
-    store.dispatch('profile/fetchUserProfile', val.id)
+onMounted(async () => {
+  store.commit('profile/CLEAR_PROFILE_MESSAGES')
+  if (authUser.value?.id) {
+    await store.dispatch('profile/fetchUserProfile', authUser.value.id)
+    initializeForm()
   }
-}, { immediate: true })
+})
 
-/** Envío del formulario */
 const handleSaveProfile = async () => {
+  store.commit('profile/CLEAR_PROFILE_MESSAGES')
+
   if (!form.name || !form.email) {
     store.commit('profile/SET_PROFILE_ERROR', 'Nombre y email son obligatorios')
     return
@@ -139,6 +147,7 @@ const handleSaveProfile = async () => {
 
   isLoading.value = true
   try {
+    suppressClear.value = true
     await store.dispatch('profile/updateUserProfile', {
       userId: authUser.value.id,
       name: form.name,
@@ -147,15 +156,35 @@ const handleSaveProfile = async () => {
       newPassword: form.newPassword,
     })
 
-    store.commit('profile/SET_PROFILE_SUCCESS', '¡Perfil actualizado exitosamente!')
-
     form.currentPassword = ''
     form.newPassword = ''
     form.confirmPassword = ''
+
+    setTimeout(() => (suppressClear.value = false), 300)
   } catch (error) {
     store.commit('profile/SET_PROFILE_ERROR', error.message || 'Error al actualizar el perfil')
   } finally {
     isLoading.value = false
   }
 }
+
+const suppressClear = ref(false)
+
+watch(form, () => {
+  if (!suppressClear.value) {
+    store.commit('profile/CLEAR_PROFILE_MESSAGES')
+  }
+})
+
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
