@@ -1,70 +1,35 @@
 <template>
   <form @submit.prevent="handleSaveProfile" class="space-y-4 max-w-md mx-auto">
-    <TextField
-      v-model="form.name"
-      type="text"
-      label="Nombre Completo"
-      placeholder="Tu nombre completo"
-      :disabled="isLoading"
-      required
-      :minlength="4"
-      autocomplete="name"
-    />
+    <TextField v-model="form.name" type="text" label="Nombre Completo" placeholder="Tu nombre completo"
+      :disabled="isLoading" required :minlength="4" autocomplete="name" />
 
-    <TextField
-      v-model="form.email"
-      type="email"
-      label="Email"
-      placeholder="tu@email.com"
-      :disabled="isLoading"
-      required
-      autocomplete="email"
-    />
+    <TextField v-model="form.email" type="email" label="Email" placeholder="tu@email.com" :disabled="isLoading" required
+      autocomplete="email" />
 
     <div class="mt-6">
       <h3 class="font-medium text-gray-700">🔒 Cambiar Contraseña</h3>
       <p class="text-sm text-gray-500 mb-2">Deja en blanco si no quieres cambiarla</p>
 
-      <TextField
-        v-model="form.currentPassword"
-        type="password"
-        label="Contraseña Actual"
-        placeholder="Tu contraseña actual"
-        :disabled="isLoading"
-        autocomplete="current-password"
-      />
+      <TextField v-model="form.currentPassword" type="password" label="Contraseña Actual"
+        placeholder="Tu contraseña actual" :disabled="isLoading" autocomplete="current-password" />
 
-      <TextField
-        v-model="form.newPassword"
-        type="password"
-        label="Nueva Contraseña"
-        placeholder="Nueva contraseña"
-        :disabled="isLoading"
-        :minlength="6"
-        autocomplete="new-password"
-        help-text="Mínimo 6 caracteres"
-      />
+      <TextField v-model="form.newPassword" type="password" label="Nueva Contraseña" placeholder="Nueva contraseña"
+        :disabled="isLoading" :minlength="6" autocomplete="new-password" help-text="Mínimo 6 caracteres" />
 
-      <TextField
-        v-model="form.confirmPassword"
-        type="password"
-        label="Confirmar Nueva Contraseña"
-        placeholder="Repite la nueva contraseña"
-        :disabled="isLoading"
-        :minlength="6"
-        autocomplete="new-password"
-      />
+      <TextField v-model="form.confirmPassword" type="password" label="Confirmar Nueva Contraseña"
+        placeholder="Repite la nueva contraseña" :disabled="isLoading" :minlength="6" autocomplete="new-password" />
     </div>
 
     <div class="mt-6">
-      <Button
-        type="submit"
-        variant="success"
-        :loading="isLoading"
-        loading-text="Guardando..."
-        full-width
-      >
+      <Button type="submit" variant="success" :loading="isLoading" loading-text="Guardando..." full-width>
         💾 Guardar Cambios
+      </Button>
+    </div>
+
+    <div class="mt-4">
+      <Button type="button" variant="danger" :loading="isLoading" loading-text="Procesando..." full-width
+        @click="handleDeleteAccount">
+        🗑️ Eliminar Cuenta
       </Button>
     </div>
 
@@ -77,6 +42,23 @@
         <p v-if="profileSuccess" class="text-green-600 text-sm font-medium">
           {{ profileSuccess }}
         </p>
+      </div>
+    </transition>
+
+    <!-- Confirm Delete Dialog -->
+    <transition name="fade">
+      <div v-if="showDeleteDialog" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black opacity-50"></div>
+        <div class="bg-white rounded-lg shadow-lg z-10 max-w-md w-full p-6">
+          <h3 class="text-lg font-semibold mb-2">Confirmar eliminación</h3>
+          <p class="text-sm text-gray-600 mb-4">¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es
+            irreversible.</p>
+
+          <div class="flex gap-3 justify-end">
+            <Button type="button" variant="secondary" @click="cancelDelete">Cancelar</Button>
+            <Button type="button" variant="danger" @click="confirmDelete" :loading="isLoading">Eliminar</Button>
+          </div>
+        </div>
       </div>
     </transition>
   </form>
@@ -168,6 +150,40 @@ const handleSaveProfile = async () => {
   }
 }
 
+const handleDeleteAccount = async () => {
+  if (!authUser.value?.id) {
+    store.commit('profile/SET_PROFILE_ERROR', 'Usuario no autenticado')
+    return
+  }
+  // Open confirmation dialog
+  showDeleteDialog.value = true
+}
+
+const showDeleteDialog = ref(false)
+
+const cancelDelete = () => {
+  showDeleteDialog.value = false
+}
+
+const confirmDelete = async () => {
+  // Perform deletion
+  showDeleteDialog.value = false
+  isLoading.value = true
+  try {
+    const res = await store.dispatch('auth/deleteAccount', authUser.value.id)
+    if (res && res.success) {
+      store.commit('profile/SET_PROFILE_SUCCESS', 'Cuenta eliminada. Serás redirigido.')
+      setTimeout(() => (window.location.href = '/'), 1000)
+    } else {
+      store.commit('profile/SET_PROFILE_ERROR', 'Error al eliminar la cuenta')
+    }
+  } catch (err) {
+    store.commit('profile/SET_PROFILE_ERROR', 'Error al eliminar la cuenta')
+  } finally {
+    isLoading.value = false
+  }
+}
+
 const suppressClear = ref(false)
 
 watch(form, () => {
@@ -183,6 +199,7 @@ watch(form, () => {
 .fade-leave-active {
   transition: opacity 0.4s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;

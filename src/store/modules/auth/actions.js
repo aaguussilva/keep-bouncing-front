@@ -73,4 +73,48 @@ export default {
   clearMessages({ commit }) {
     commit('CLEAR_MESSAGES')
   },
+
+  async deleteAccount({ commit }, userId) {
+    commit('CLEAR_MESSAGES')
+    commit('SET_LOADING', true)
+
+    const token = localStorage.getItem('access_token')
+    if (!token) {
+      commit('SET_ERROR_MESSAGE', 'No authentication token found')
+      commit('SET_LOADING', false)
+      return { success: false }
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      let data = {}
+      try {
+        data = await response.json()
+      } catch (e) {
+        data = {}
+      }
+
+      if (response.ok) {
+        // Successful deletion: clear local session
+        localStorage.removeItem('access_token')
+        commit('LOGOUT')
+        commit('SET_SUCCESS_MESSAGE', data.detail || 'Account deleted')
+        return { success: true }
+      } else {
+        commit('SET_ERROR_MESSAGE', data.detail || 'Error deleting account')
+        return { success: false }
+      }
+    } catch (error) {
+      commit('SET_ERROR_MESSAGE', 'Error de conexión. Verifica que el servidor esté ejecutándose.')
+      return { success: false }
+    } finally {
+      commit('SET_LOADING', false)
+    }
+  },
 }
