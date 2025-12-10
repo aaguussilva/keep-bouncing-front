@@ -22,7 +22,7 @@ const route = useRoute()
 const navigationItems = computed(() => [
   { id: 'home', label: 'Inicio', route: '/home', disabled: false },
   { id: 'register-pegue', label: 'Registrar Pegue', route: '/pegue/register', disabled: false },
-  { id: 'profile', label: 'Perfil', route: '/profile/edit', disabled: false },
+  { id: 'profile', label: 'Perfil', route: '/profile', disabled: false },
 ])
 
 const navigateTo = (routePath) => {

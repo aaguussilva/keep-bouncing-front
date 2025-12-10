@@ -1,7 +1,6 @@
 export default {
   async fetchUserProfile({ commit }, userId) {
 
-    console.log('fetchUserProfile called', userId)
     const token = localStorage.getItem('access_token')
 
     try {
